@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Mail, User, LockKeyhole, Eye, EyeOff, ArrowRight, LoaderCircle, CheckCircle } from 'lucide-react'
+import { Link } from 'react-router-dom';
 
 export default function Signup() {
   const [status, setStatus] = useState('idle');
@@ -28,7 +29,6 @@ export default function Signup() {
         <div className="bg-paper-raised border border-rule rounded-lg p-8 md:p-10 transition-all duration-300">
           <header className="mb-8 flex flex-col items-center">
             <h2 className="font-heading text-heading text-ink font-semibold">Create your account</h2>
-            <p className="font-body text-body text-on-surface-variant mt-1">Begin evidence based research with Citeline</p>
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,7 +74,7 @@ export default function Signup() {
             <div className="space-y-2 group">
               <label
                 htmlFor="password"
-                className="font-caption-mono text-caption-mono text-ink flex items-center gap-2 group-focus-within:text-primary transition-colors font-medium"
+                className="font-caption-mono text-caption-mono text-ink flex items-center gap-2 group-focus-within:text-primary transition-colors font-medium text-[16px] leading-none"
               >
                 <span className="material-symbols-outlined text-[18px]"><LockKeyhole /></span>
                 PASSWORD
@@ -132,29 +132,16 @@ export default function Signup() {
         </form>
         {/* Footer */}
         <footer className="mt-10 pt-6 border-t border-rule/50 text-center">
-            <p className="font-body text-body text-on-surface-variant">
-              Already have an account?
-              <a
-                href="#"
-                className="text-primary font-heading hover:underline underline-offset-4 ml-1 font-semibold"
-              >
-                Sign in
-              </a>
-            </p>
-          </footer>
-        </div>
-
-        <div className="mt-8 px-4">
-          <p className="font-caption-mono text-[12px] text-ink text-center leading-relaxed">
-            By creating an account, you agree to the{" "}
-            <a href="#" className="underline decoration-rule hover:decoration-primary">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="#" className="underline decoration-rule hover:decoration-primary">
-              Privacy Policy
+          <p className="font-body text-body text-on-surface-variant">
+            Already have an account?
+            <a
+              href="#"
+              className="text-primary font-heading hover:underline underline-offset-4 ml-1 font-semibold"
+            >
+            <Link to="/signin">Sign In</Link>
             </a>
           </p>
+        </footer>
         </div>
       </main>
     </div>
