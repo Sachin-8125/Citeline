@@ -10,7 +10,7 @@ export default function PreviewCard() {
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/20"></div>
         </div>
         <div className="mx-auto bg-paper px-6 py-1 rounded text-[11px] font-caption-mono text-ink-muted border border-rule">
-          margin.app / research / quantum_computing_citations
+          citeline.app / research / quantum_computing_citations
         </div>
       </div>
 
