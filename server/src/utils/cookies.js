@@ -1,65 +1,21 @@
-import crypto from 'node:crypto';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { env, isProduction } from '../config/env.js';
 
-export function createAccessToken(user) {
-  return jwt.sign(
-    {
-      sub: user._id.toString(), 
-      email: user.email,
-      name: user.name,
-    },
-    env.accessSecret,
-    { expiresIn: env.accessTokenTtl } 
-  );
-}
+export const REFRESH_COOKIE_NAME = 'refreshToken';
 
-export function createRefreshToken(tokenId, userId) {
-  return jwt.sign(
-    {
-      jti: tokenId,           
-      sub: userId.toString(), 
-    },
-    env.refreshSecret,
-    { expiresIn: `${env.refreshTokenTtlDays}d` } 
-  );
-}
+const DAY_IN_MS = 24 * 60 * 60 * 1000; 
 
-export function verifyRefreshToken(token) {
-  try {
-    return jwt.verify(token, env.refreshSecret);
-  } catch (error) {
-    const message = error.name === 'TokenExpiredError'
-      ? 'Refresh token has expired'
-      : 'Invalid refresh token';
-    throw new Error(message);
-  }
-}
+export const refreshCookieOptions = {
+  httpOnly: true,                             
+  secure: isProduction,                       
+  sameSite: 'strict',                          
+  maxAge: env.refreshTokenTtlDays * DAY_IN_MS, 
+  path: '/api/auth',                           
+};
 
-export function hashToken(token) {
-  return crypto.createHash('sha256').update(token).digest('hex');
-}
-
-export function createTokenId() {
-  return crypto.randomUUID();
-}
-
-export function getRefreshTokenExpiry() {
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + env.refreshTokenTtlDays);
-  return expiresAt;
-}
-
-export function buildAuthResponse(user) {
-  return {
-    user: {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      lastLoginAt: user.lastLoginAt,
-    },
-    accessToken: createAccessToken(user),
-  };
-}
+export const clearCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'strict',
+  maxAge: 0,           
+  path: '/api/auth',
+};
