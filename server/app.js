@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { authRouter } from './routes/authRoutes.js';
+import { documentRouter } from './routes/documentRoutes.js';
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', generalLimiter, authLimiter, authRouter);
+app.use('/api/documents', generalLimiter, documentRouter);
 
 app.use(notFoundHandler);
 
