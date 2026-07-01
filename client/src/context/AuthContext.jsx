@@ -1,46 +1,48 @@
-import { 
-  createContext, 
-  useCallback, 
-  useEffect, 
-  useState, 
-  useMemo 
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
 } from 'react';
 import { api, setAccessToken } from '../lib/api';
 
 const AuthContext = createContext(undefined);
 export { AuthContext };
 
-function applyAuthPayload(payload, setUser) {
+function applyAuthPayload(payload, setUser, setToken) {
   setAccessToken(payload.accessToken);
   setUser(payload.user);
+  setToken(payload.accessToken);
 }
 
-function clearAuth(setUser) {
+function clearAuth(setUser, setToken) {
   setAccessToken(null);
   setUser(null);
+  setToken(null);
 }
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [accessToken, setToken] = useState(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   const refreshSession = useCallback(async () => {
     try {
       const response = await api.post('/auth/refresh');
-      applyAuthPayload(response.data, setUser);
+      applyAuthPayload(response.data, setUser, setToken);
     } catch (error) {
-      // Clear any partial auth state before rethrowing
-      clearAuth(setUser);
-      throw error; // preserve original error for caller
+      clearAuth(setUser, setToken);
+      throw error;
     }
   }, []);
 
   const login = useCallback(async (values) => {
     try {
       const response = await api.post('/auth/login', values);
-      applyAuthPayload(response.data, setUser);
+      applyAuthPayload(response.data, setUser, setToken);
     } catch (error) {
-      clearAuth(setUser);
+      clearAuth(setUser, setToken);
       throw error;
     }
   }, []);
@@ -48,9 +50,9 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (values) => {
     try {
       const response = await api.post('/auth/register', values);
-      applyAuthPayload(response.data, setUser);
+      applyAuthPayload(response.data, setUser, setToken);
     } catch (error) {
-      clearAuth(setUser);
+      clearAuth(setUser, setToken);
       throw error;
     }
   }, []);
@@ -59,7 +61,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/auth/logout');
     } finally {
-      clearAuth(setUser);
+      clearAuth(setUser, setToken);
     }
   }, []);
 
@@ -68,9 +70,9 @@ export function AuthProvider({ children }) {
 
     async function bootstrap() {
       try {
-        await refreshSession(); 
+        await refreshSession();
       } catch {
-        // Already handled inside refreshSession (clearAuth called)
+        // Already handled in refreshSession
       } finally {
         if (mounted) {
           setIsBootstrapping(false);
@@ -79,15 +81,13 @@ export function AuthProvider({ children }) {
     }
 
     bootstrap();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [refreshSession]);
 
   const value = useMemo(
     () => ({
       user,
+      accessToken,
       isAuthenticated: Boolean(user),
       isBootstrapping,
       login,
@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
       logout,
       refreshSession,
     }),
-    [isBootstrapping, login, logout, refreshSession, register, user]
+    [accessToken, isBootstrapping, login, logout, refreshSession, register, user]
   );
 
   return (
