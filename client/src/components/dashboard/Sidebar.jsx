@@ -25,10 +25,10 @@ export default function Sidebar({
       {/* Brand */}
       <div className="mb-8 px-2">
         <h1 className="font-display-md text-display-md text-primary leading-none">
-          Margin
+          Citeline
         </h1>
         <p className="font-body text-xs text-ink-muted uppercase tracking-wider mt-1">
-          Academic Assistant
+          AI-Powered Research Assistant
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export default function Sidebar({
                 </div>
                 <div className="w-full bg-paper h-1 rounded-full overflow-hidden">
                   <div
-                    className="bg-moss h-full transition-all duration-[2000ms] ease-out"
+                    className="bg-moss h-full transition-all duration-2000ms ease-out"
                     style={{
                       width:
                         uploadStatus === UploadStatus.UPLOADING
