@@ -4,10 +4,10 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { env } from './config/env.js';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { authRouter } from './routes/authRoutes.js';
-import { documentRouter } from './routes/documentRoutes.js';
+import { env } from './src/config/env.js';
+import { errorHandler, notFoundHandler } from './src/middleware/errorHandler.js';
+import { authRouter } from './src/routes/authRoutes.js';
+import { documentRouter } from './src/routes/documentRoutes.js';
 
 const app = express();
 
