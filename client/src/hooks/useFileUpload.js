@@ -1,107 +1,82 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "../context/useAuth";
 
-const MessageType = {
-  USER: "user",
-  ASSISTANT: "assistant",
-  SYSTEM: "system",
+const UploadStatus = {
+  IDLE: "idle",
+  UPLOADING: "uploading",
+  SUCCESS: "success",
+  ERROR: "error",
 };
 
-export function useChat(activeDocument) {
+export function useFileUpload(setMessages, setDocuments, setActiveDocument) {
   const { accessToken } = useAuth();
 
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [chatStatus, setChatStatus] = useState("idle");
-  const textareaRef = useRef(null);
-  const messagesEndRef = useRef(null);
+  const [uploadStatus, setUploadStatus] = useState(UploadStatus.IDLE);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
-  const handleInput = useCallback((e) => {
-    const el = e.target;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
-    setInput(el.value);
-  }, []);
+  const handleFileUpload = useCallback(
+    async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-  const handleSendMessage = useCallback(async () => {
-    if (!input.trim() || chatStatus === "sending") return;
+      setUploadedFile(file);
+      setUploadStatus(UploadStatus.UPLOADING);
 
-    const userMessage = {
-      type: MessageType.USER,
-      content: input.trim(),
-      timestamp: new Date().toISOString(),
-    };
+      const formData = new FormData();
+      formData.append("file", file);
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setChatStatus("sending");
+      try {
+        const response = await fetch("/api/documents/upload", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        });
 
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(
+            errorData?.message || `Upload failed (${response.status})`
+          );
+        }
 
-    try {
-      const response = await fetch("/api/documents/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          documentId: activeDocument?.id,
-        }),
-      });
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
+        setUploadStatus(UploadStatus.SUCCESS);
 
-      const data = await response.json();
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "system",
+            content: `Uploaded "${file.name}" successfully. You can now ask questions about it.`,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: MessageType.ASSISTANT,
-          content: data.response,
-          sources: data.sources,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-      setChatStatus("idle");
-    } catch (error) {
-      setChatStatus("error");
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: MessageType.SYSTEM,
-          content: `Error: ${error.message}`,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    }
-  }, [input, chatStatus, activeDocument, accessToken]);
+        setDocuments((prev) => [data.document, ...prev]);
+        setActiveDocument(data.document);
 
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSendMessage();
+        e.target.value = "";
+      } catch (error) {
+        setUploadStatus(UploadStatus.ERROR);
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "system",
+            content: `Upload failed: ${error.message}`,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
       }
     },
-    [handleSendMessage]
+    [accessToken, setMessages, setDocuments, setActiveDocument]
   );
 
   return {
-    messages,
-    setMessages,
-    input,
-    chatStatus,
-    textareaRef,
-    messagesEndRef,
-    handleInput,
-    handleSendMessage,
-    handleKeyDown,
-    MessageType,
+    uploadStatus,
+    uploadedFile,
+    handleFileUpload,
+    UploadStatus,
   };
 }
