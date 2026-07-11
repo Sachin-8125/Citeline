@@ -54,7 +54,8 @@ export function useChat(activeDocument) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Request failed (${response.status})`);
       }
 
       const data = await response.json();

@@ -240,10 +240,11 @@ export async function chatWithDocument(req, res, next) {
     }
 
     if (document.status !== 'ready') {
-      throw createHttpError(
-        400,
-        `Document is not ready yet. Current status: ${document.status}`
-      );
+      const message =
+        document.status === 'error' && document.errorMessage
+          ? `Document processing failed: ${document.errorMessage}`
+          : `Document is not ready yet. Current status: ${document.status}`;
+      throw createHttpError(400, message);
     }
 
     if (!document.chunks || document.chunks.length === 0) {

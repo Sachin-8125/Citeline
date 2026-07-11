@@ -36,13 +36,21 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
+  // Handle Gemini API quota/rate limit errors (429)
+  if (err.message?.includes('quota') || err.message?.includes('Quota')) {
+    return res.status(429).json({
+      message: "Gemini API quota exceeded, please try again later.",
+    });
+  }
+
   if (err.statusCode) {
     return res.status(err.statusCode).json({
       message: err.message,
     });
   }
 
+  console.error('❌ Unhandled error:', err.message);
   return res.status(500).json({
-    message: 'Something went wrong. Please try again later.',
+    message: err.message || 'Something went wrong. Please try again later.',
   });
 }

@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: env.geminiApiKey });
 export async function generateEmbedding(text) {
   try {
     const response = await ai.models.embedContent({
-      model: 'text-embedding-004',
+      model: 'gemini-embedding-2',
       contents: text,
     });
 
@@ -73,15 +73,27 @@ export async function generateChatResponse(question, relevantChunks) {
 
     Provide a clear, well-cited answer based only on the passages above.`;
 
-    const interaction = await ai.interactions.create({
-      model: 'gemini-2.5-flash',
-      system: systemInstruction,
-      input: prompt,
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-lite',
+      contents: prompt,
+      config: {
+        systemInstruction,
+      },
     });
 
-    return interaction.output_text;
+    return result.candidates[0].content.parts[0].text;
   } catch (error) {
     console.error('❌ Chat response generation failed:', error);
-    throw new Error(`Failed to generate response: ${error.message}`);
+    let parsed;
+    try {
+      parsed = JSON.parse(error.message);
+    } catch {
+      throw new Error(`Failed to generate response: ${error.message}`);
+    }
+    const geminiError = new Error(
+      `Gemini API: ${parsed?.error?.message || error.message}`
+    );
+    geminiError.statusCode = parsed?.error?.code || 500;
+    throw geminiError;
   }
 }
