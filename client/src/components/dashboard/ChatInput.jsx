@@ -11,7 +11,7 @@ export default function ChatInput({
 }) {
   return (
     <div className="p-6 border-t border-rule bg-paper-raised">
-      <div className="relative max-w-2xl mx-auto">
+      <div className="relative">
         <textarea
           ref={textareaRef}
           value={input}

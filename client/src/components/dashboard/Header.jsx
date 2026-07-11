@@ -2,7 +2,7 @@ import { FileText, Search, Bell } from "lucide-react";
 
 export default function Header({ activeDocument }) {
   return (
-    <header className="fixed top-0 right-0 w-[calc(100%-theme(spacing.rail-width))] h-16 bg-paper border-b border-rule flex justify-between items-center px-6 z-10">
+    <header className="fixed top-0 right-0 w-[calc(100%-(var(--spacing-rail-width)))] h-16 bg-paper border-b border-rule flex justify-between items-center px-6 z-10">
       {/* Document Info */}
       <div className="flex items-center gap-4">
         <FileText className="text-ink-muted" size={24} />
@@ -54,7 +54,7 @@ export default function Header({ activeDocument }) {
             className="text-ink-muted cursor-pointer hover:text-primary"
             size={20}
           />
-          <button className="bg-moss text-paper-raised px-4 py-1.5 rounded text-sm font-heading hover:opacity-90">
+          <button className="bg-moss text-paper-raised bg-emerald-800 px-4 py-1.5 rounded text-sm font-heading hover:opacity-90">
             Share
           </button>
         </div>

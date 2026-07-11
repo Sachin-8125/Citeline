@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @theme {
+  --spacing-rail-width: 280px;
+  --spacing-chat-min-width: 420px;
+  --spacing-viewer-width-pct: 30%;
+  --spacing-margin: 24px;
   --color-primary: #105647;
   --color-primary-container: #2f6f5e;
   --color-on-primary: #ffffff;

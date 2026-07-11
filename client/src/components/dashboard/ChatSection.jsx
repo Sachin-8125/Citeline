@@ -16,7 +16,7 @@ export default function ChatSection({
   return (
     <section className="flex-1 min-w-chat-min-width h-full flex flex-col border-r border-rule relative">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-margin space-y-8 max-w-2xl mx-auto w-full scroll-smooth">
+      <div className="flex-1 overflow-y-auto p-margin space-y-8 scroll-smooth">
         {/* Empty State */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center pt-20">
