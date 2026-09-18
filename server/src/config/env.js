@@ -85,16 +85,14 @@ export function isAllowedOrigin(origin) {
   }
 
   try {
-    const hostname = new URL(normalized).hostname;
-    const allowsVercel = env.clientOrigins.some((allowed) => {
-      try {
-        return new URL(allowed).hostname.endsWith('.vercel.app');
-      } catch {
-        return false;
-      }
-    });
+    const url = new URL(normalized);
+    const { hostname } = url;
 
-    return allowsVercel && hostname.endsWith('.vercel.app');
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return true;
+    }
+
+    return url.protocol === 'https:' && hostname.endsWith('.vercel.app');
   } catch {
     return false;
   }

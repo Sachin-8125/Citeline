@@ -4,14 +4,17 @@ export const REFRESH_COOKIE_NAME = 'refreshToken';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-const usesCrossSiteCookies = env.clientOrigins.some((origin) => {
-  try {
-    const hostname = new URL(origin).hostname;
-    return hostname !== 'localhost' && hostname !== '127.0.0.1';
-  } catch {
-    return false;
-  }
-});
+const usesCrossSiteCookies =
+  process.env.RENDER === 'true' ||
+  env.nodeEnv === 'production' ||
+  env.clientOrigins.some((origin) => {
+    try {
+      const hostname = new URL(origin).hostname;
+      return hostname !== 'localhost' && hostname !== '127.0.0.1';
+    } catch {
+      return false;
+    }
+  });
 
 const cookieSameSite = usesCrossSiteCookies ? 'none' : 'lax';
 
