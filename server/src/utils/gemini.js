@@ -74,7 +74,7 @@ export async function generateChatResponse(question, relevantChunks) {
     Provide a clear, well-cited answer based only on the passages above.`;
 
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-3.5-flash-lite',
       contents: prompt,
       config: {
         systemInstruction,
