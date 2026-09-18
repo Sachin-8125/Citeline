@@ -14,7 +14,7 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL: z.string().default('15m'),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().default(7),
 
-  CLIENT_URL: z.string().url().default('http://localhost:5173'),
+  CLIENT_URL: z.string().min(1).default('http://localhost:5173'),
 
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
 
@@ -32,6 +32,24 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+const clientOrigins = parsed.data.CLIENT_URL.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const invalidOrigin = clientOrigins.find((origin) => {
+  try {
+    new URL(origin);
+    return false;
+  } catch {
+    return true;
+  }
+});
+
+if (invalidOrigin) {
+  console.error(`❌ Invalid CLIENT_URL origin: ${invalidOrigin}`);
+  process.exit(1);
+}
+
 export const env = {
   nodeEnv: parsed.data.NODE_ENV,
   port: parsed.data.PORT,
@@ -40,8 +58,9 @@ export const env = {
   refreshSecret: parsed.data.JWT_REFRESH_SECRET,
   accessTokenTtl: parsed.data.ACCESS_TOKEN_TTL,
   refreshTokenTtlDays: parsed.data.REFRESH_TOKEN_TTL_DAYS,
-  clientUrl: parsed.data.CLIENT_URL,
-  geminiApiKey: parsed.data.GEMINI_API_KEY, 
+  clientUrl: clientOrigins[0],
+  clientOrigins,
+  geminiApiKey: parsed.data.GEMINI_API_KEY,
   maxFileSizeMb: parsed.data.MAX_FILE_SIZE_MB,
   uploadDir: parsed.data.UPLOAD_DIR,
 };

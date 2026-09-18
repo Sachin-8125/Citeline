@@ -17,8 +17,14 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: env.clientUrl,  
-    credentials: true,       
+    origin(origin, callback) {
+      if (!origin || env.clientOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+    credentials: true,
   })
 );
 
