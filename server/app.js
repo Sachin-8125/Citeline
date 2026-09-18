@@ -4,7 +4,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { env } from './src/config/env.js';
+import { env, isAllowedOrigin } from './src/config/env.js';
 import { errorHandler, notFoundHandler } from './src/middleware/errorHandler.js';
 import { authRouter } from './src/routes/authRoutes.js';
 import { documentRouter } from './src/routes/documentRoutes.js';
@@ -18,13 +18,18 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || env.clientOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
+
+      console.warn(`CORS blocked origin: ${origin}`);
       callback(null, false);
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
   })
 );
 
@@ -34,23 +39,27 @@ app.use(cookieParser());
 
 app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 
+const skipPreflight = (req) => req.method === 'OPTIONS';
+
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  limit: 100,                  
-  standardHeaders: true,      
-  legacyHeaders: false,       
-  message: { 
-    message: 'Too many requests. Please try again later.' 
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipPreflight,
+  message: {
+    message: 'Too many requests. Please try again later.',
   },
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  
-  limit: 20,                   
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { 
-    message: 'Too many authentication attempts. Try again later.' 
+  skip: skipPreflight,
+  message: {
+    message: 'Too many authentication attempts. Try again later.',
   },
 });
 

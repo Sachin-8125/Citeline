@@ -32,8 +32,15 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+function normalizeOrigin(value) {
+  return value
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\/+$/, '');
+}
+
 const clientOrigins = parsed.data.CLIENT_URL.split(',')
-  .map((origin) => origin.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 
 const invalidOrigin = clientOrigins.find((origin) => {
@@ -66,3 +73,29 @@ export const env = {
 };
 
 export const isProduction = env.nodeEnv === 'production';
+
+export function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  const normalized = normalizeOrigin(origin);
+  if (env.clientOrigins.includes(normalized)) {
+    return true;
+  }
+
+  try {
+    const hostname = new URL(normalized).hostname;
+    const allowsVercel = env.clientOrigins.some((allowed) => {
+      try {
+        return new URL(allowed).hostname.endsWith('.vercel.app');
+      } catch {
+        return false;
+      }
+    });
+
+    return allowsVercel && hostname.endsWith('.vercel.app');
+  } catch {
+    return false;
+  }
+}
